@@ -1,0 +1,129 @@
+##############################
+# Logs (your original)
+##############################
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+##############################
+# Node Modules & Builds
+##############################
+node_modules
+dist
+dist-ssr
+*.local
+build/
+.tmp/
+temp/
+
+##############################
+# Editor directories and files
+##############################
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+##############################
+# Environment and Secret Files
+##############################
+.env
+.env.*
+*.env
+
+##############################
+# Frontend (React / Vite)
+##############################
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.parcel-cache/
+frontend/coverage/
+frontend/.eslintcache
+
+##############################
+# Backend (Node.js / Express)
+##############################
+backend/node_modules/
+backend/build/
+backend/coverage/
+backend/.eslintcache
+
+##############################
+# AI / Python Services
+##############################
+ai/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+ai/venv/
+ai/myenv/
+venv/
+env/
+
+# Jupyter checkpoints
+ai/.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Large model / weight files
+*.h5
+*.pt
+*.pth
+*.pkl
+*.joblib
+*.onnx
+*.tflite
+*.weights
+
+# YOLO model files
+ai/*.pt
+ai/models/
+ai/yolo*
+ai/*.engine
+
+# Generated image/data folders
+ai/converted_images/
+ai/output/
+ai/temp/
+ai/images/
+ai/museum/
+ai/uploads/
+ai/*.zip
+ai/*.tar.gz
+
+##############################
+# OS Files
+##############################
+Thumbs.db
+
+##############################
+# Docker (optional)
+##############################
+docker-data/
+
+ai/myenv/
+*.pyc
+__pycache__/
+
+
+# AI unwanted
+ai/.env
+ai/__pycache__/
+ai/converted_images/
+ai/images/
+ai/museum/
+ai/myvenv/
+ai/yolov8n.pt
+*.txt
