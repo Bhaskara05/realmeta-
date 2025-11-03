@@ -287,4 +287,19 @@ All colors MUST be HSL.
 .transition-smooth {
   transition: all 0.3s ease-in-out;
 }
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+.animate-float-slow {
+  animation: float-slow 10s ease-in-out infinite;
+}
 

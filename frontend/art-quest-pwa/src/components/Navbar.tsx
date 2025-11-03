@@ -16,8 +16,13 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-md bg-white/80 shadow-sm">
-      <div className="flex justify-around items-center h-16 max-w-screen-xl mx-auto px-2">
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 border-b shadow-sm 
+                 backdrop-blur-md 
+                 bg-gradient-to-r from-[#f7f3ed]/95 via-[#f2e9dc]/90 to-[#f7f3ed]/95 
+                 text-gray-800"
+    >
+      <div className="flex justify-around items-center h-16 max-w-screen-xl mx-auto px-4">
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
           return (
@@ -26,11 +31,13 @@ const Navbar = () => {
               to={path}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 transition-all flex-1 py-2 px-1",
-                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                isActive
+                  ? "text-[#7b3f00] font-semibold drop-shadow-sm" // rich gold-brown active color
+                  : "text-gray-700 hover:text-[#5c4a1d]" // subtle hover effect
               )}
             >
               <Icon className={cn("h-5 w-5", isActive && "animate-scale-in")} />
-              <span className="text-[10px] font-medium">{label}</span>
+              <span className="text-[11px] font-medium">{label}</span>
             </Link>
           );
         })}
