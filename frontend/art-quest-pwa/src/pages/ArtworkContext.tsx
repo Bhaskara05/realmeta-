@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface ArtworkMetadata {
   title?: string;
@@ -7,15 +7,15 @@ interface ArtworkMetadata {
   category?: string;
 }
 
-interface Artwork {
+export interface Artwork {
   id: string;
   title: string;
   description: string;
   shortDesc: string;
-  image: string;
+  image: string;            // Full image URL
   score?: number;
   metadata?: ArtworkMetadata;
-  image_url?: string;
+  image_url?: string;       // Raw path returned from backend
 }
 
 interface ArtworkContextType {
@@ -32,7 +32,8 @@ const defaultArtworks: Artwork[] = [
     title: "Starry Night",
     description: "A masterpiece by Van Gogh.",
     shortDesc: "Van Gogh's swirling night sky.",
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
   },
   {
     id: "art_002",
@@ -68,19 +69,27 @@ export const ArtworkProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [artworks, setArtworks] = useState<Artwork[]>(defaultArtworks);
 
   const updateArtworksFromSearch = (searchResults: any[]) => {
-    const transformedArtworks: Artwork[] = searchResults.map((result, index) => ({
-      id: result.id || `search_${index}`,
-      title: result.metadata?.title || "Unknown Title",
-      description: result.metadata?.artist 
-        ? `${result.metadata.artist}${result.metadata.year ? ` (${result.metadata.year})` : ''}`
-        : "Artist unknown",
-      shortDesc: result.metadata?.category || "Discovered artwork",
-      image: `http://localhost:8000${result.image_url}`,
-      score: result.score,
-      metadata: result.metadata,
-      image_url: result.image_url,
-    }));
+    const transformedArtworks: Artwork[] = searchResults.map((result, index) => {
+      const fullImageUrl = result.image_url?.startsWith("http")
+        ? result.image_url
+        : `http://localhost:8000${result.image_url}`;
 
+      return {
+        id: result.id || `search_${index}`,
+        title: result.metadata?.title || "Untitled Artwork",
+        description:
+          result.metadata?.artist
+            ? `${result.metadata.artist}${result.metadata.year ? ` (${result.metadata.year})` : ""}`
+            : "Artist unknown",
+        shortDesc: result.metadata?.category || "Scanned & identified artwork",
+        image: fullImageUrl,
+        score: result.score,
+        metadata: result.metadata,
+        image_url: result.image_url,
+      };
+    });
+
+    // ✅ Replace artworks list with searched items
     setArtworks(transformedArtworks);
   };
 
@@ -93,8 +102,8 @@ export const ArtworkProvider: React.FC<{ children: ReactNode }> = ({ children })
 
 export const useArtwork = () => {
   const context = useContext(ArtworkContext);
-  if (context === undefined) {
-    throw new Error('useArtwork must be used within an ArtworkProvider');
+  if (!context) {
+    throw new Error("useArtwork must be used within an ArtworkProvider");
   }
   return context;
 };
