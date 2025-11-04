@@ -1,29 +1,13 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera, Upload, X, ArrowRight, Sparkles, Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useArtwork } from "./ArtworkContext";
+import { Camera, Upload, X, ArrowRight, Sparkles } from "lucide-react";
 
-interface SearchResult {
-  id: string;
-  score: number;
-  image_url: string;
-  metadata?: {
-    title?: string;
-    artist?: string;
-    year?: string;
-    category?: string;
-  };
-}
-
-const Scanner = () => {
-  const navigate = useNavigate();
-  const { updateArtworksFromSearch } = useArtwork();
+const ScannerWithJourney = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [image, setImage] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -77,9 +61,6 @@ const Scanner = () => {
 
       setSearchResults(data.matches);
       setShowResults(true);
-      
-      // Update global artwork context
-      updateArtworksFromSearch(data.matches);
 
     } catch (error) {
       setIsLoading(false);
@@ -98,10 +79,7 @@ const Scanner = () => {
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
 
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0);
-      }
+      canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
       
       canvas.toBlob((blob) => {
         if (blob) {
@@ -155,36 +133,20 @@ const Scanner = () => {
     setIsLoading(false);
   };
 
-  const handleViewInJourney = () => {
-    navigate("/journey");
-  };
-
-  // Journey Page - Results Display (Dynamic from Backend)
+  // Journey Page - Results Display
   if (showResults && searchResults.length > 0) {
     const [mainArtwork, ...recommended] = searchResults;
 
     return (
-      <div className="min-h-screen pb-20 bg-gradient-to-b from-[#faf8f3] to-[#f5f0e6]">
+      <div className="min-h-screen pb-20 bg-gradient-to-b from-gray-50 to-gray-100">
         {/* Header */}
-        <div className="bg-[#f5f0e6] shadow-md sticky top-0 z-10 border-b-2 border-[#d7c8a2]">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-screen-xl mx-auto px-4 py-4 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-[#3e2b12]">Matched Artworks</h1>
-            <div className="flex gap-3">
-              <Button 
-                onClick={handleViewInJourney} 
-                className="bg-[#3e2b12] hover:bg-[#2c1b0e] text-white font-semibold"
-              >
-                <Home className="mr-2 h-4 w-4" />
-                View in Journey
-              </Button>
-              <Button 
-                onClick={resetScanner} 
-                className="bg-[#c5a25a] hover:bg-[#d4b060] text-black font-semibold"
-              >
-                <Camera className="mr-2 h-4 w-4" />
-                Scan Again
-              </Button>
-            </div>
+            <h1 className="text-2xl font-bold text-gray-800">Matched Artworks</h1>
+            <Button onClick={resetScanner} variant="outline">
+              <Camera className="mr-2 h-4 w-4" />
+              Scan Again
+            </Button>
           </div>
         </div>
 
@@ -192,34 +154,29 @@ const Scanner = () => {
         {image && (
           <div className="max-w-screen-xl mx-auto px-4 py-8">
             <div className="text-center">
-              <p className="text-sm text-[#6b5b3e] mb-3 font-semibold">Your scanned image:</p>
+              <p className="text-sm text-gray-600 mb-3">Your scanned image:</p>
               <img 
                 src={image} 
                 alt="Scanned artwork" 
-                className="w-48 h-48 object-cover rounded-2xl shadow-xl mx-auto border-4 border-[#c5a25a]"
+                className="w-48 h-48 object-cover rounded-lg shadow-lg mx-auto border-4 border-blue-500"
               />
             </div>
           </div>
         )}
 
-        {/* Museum-Themed Main Highlight */}
-        <div className="max-w-screen-xl mx-auto px-4 py-16">
+        {/* Main Highlight */}
+        <div className="max-w-screen-xl mx-auto px-4 py-8">
           <Card className="group relative overflow-hidden shadow-2xl rounded-3xl border border-[#d7c8a2]/40 bg-[#f5f0e6] transition-all duration-700">
             <div className="relative">
               <img
                 src={`http://localhost:8000${mainArtwork.image_url}`}
                 alt={mainArtwork.metadata?.title || "Artwork"}
-                className="w-full h-[500px] object-cover rounded-3xl transform transition-transform duration-700 group-hover:scale-105 group-hover:-translate-y-2"
-                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                  e.currentTarget.src = "https://via.placeholder.com/800x500?text=Image+Not+Found";
-                }}
+                className="w-full h-[500px] object-cover rounded-3xl transform transition-transform duration-700 group-hover:scale-105"
               />
 
-              {/* Warm spotlight gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#2c1b0e]/70 via-[#4e3720]/40 to-transparent rounded-3xl transition-opacity duration-500 group-hover:opacity-80" />
 
-              {/* Museum Info Section */}
-              <div className="absolute bottom-10 left-10 text-[#fef7e3] space-y-3 max-w-md transition-transform duration-700 group-hover:translate-y-[-4px]">
+              <div className="absolute bottom-10 left-10 text-[#fef7e3] space-y-3 max-w-md">
                 <div className="flex items-center gap-2 text-[#f2cf77]">
                   <Sparkles className="h-5 w-5" />
                   <span className="font-semibold tracking-wide">
@@ -230,7 +187,7 @@ const Scanner = () => {
                   {mainArtwork.metadata?.title || "Unknown Title"}
                 </h2>
                 {mainArtwork.metadata?.artist && (
-                  <p className="text-sm md:text-base text-[#f3e9d2] leading-relaxed">
+                  <p className="text-sm md:text-base text-[#f3e9d2]">
                     by {mainArtwork.metadata.artist}
                   </p>
                 )}
@@ -239,26 +196,20 @@ const Scanner = () => {
                     {mainArtwork.metadata.year}
                   </p>
                 )}
-                {mainArtwork.metadata?.category && (
-                  <p className="text-xs text-[#f2cf77] uppercase tracking-wider">
-                    {mainArtwork.metadata.category}
-                  </p>
-                )}
-                <Button className="mt-3 bg-[#c5a25a] hover:bg-[#d4b060] text-black font-semibold shadow-md hover:shadow-lg transition-all">
-                  Explore Exhibit <ArrowRight className="ml-2 h-4 w-4" />
+                <Button className="mt-3 bg-[#c5a25a] hover:bg-[#d4b060] text-black font-semibold shadow-md">
+                  View Details <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
 
-            {/* Decorative museum frame border glow */}
             <div className="absolute inset-0 rounded-3xl ring-2 ring-[#d7c8a2]/50 group-hover:ring-[#e2b76b] transition-all duration-700 pointer-events-none"></div>
           </Card>
         </div>
 
-        {/* Recommended Exhibits Section */}
+        {/* Other Matches */}
         {recommended.length > 0 && (
-          <div className="max-w-screen-xl mx-auto px-4 py-16">
-            <h3 className="text-3xl font-bold text-[#3e2b12] mb-8 text-center tracking-tight">
+          <div className="max-w-screen-xl mx-auto px-4 py-8">
+            <h3 className="text-3xl font-bold text-[#3e2b12] mb-8 text-center">
               Other Matches
             </h3>
 
@@ -266,48 +217,33 @@ const Scanner = () => {
               {recommended.map((art, i) => (
                 <Card
                   key={art.id}
-                  className="group relative overflow-hidden rounded-3xl bg-[#f5f0e6] border border-[#d7c8a2]/50 shadow-[0_4px_20px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] transform hover:scale-[1.03] transition-all duration-500"
+                  className="group relative overflow-hidden rounded-3xl bg-[#f5f0e6] border border-[#d7c8a2]/50 shadow-lg hover:shadow-xl transform hover:scale-[1.03] transition-all duration-500"
                 >
-                  {/* Artwork Image */}
                   <div className="relative">
                     <img
                       src={`http://localhost:8000${art.image_url}`}
                       alt={art.metadata?.title || "Artwork"}
-                      className="w-full h-56 object-cover rounded-t-3xl transform group-hover:scale-105 transition-transform duration-700"
-                      onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                        e.currentTarget.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
-                      }}
+                      className="w-full h-56 object-cover rounded-t-3xl group-hover:scale-105 transition-transform duration-700"
                     />
-                    {/* Similarity Score Badge */}
-                    <div className="absolute top-3 right-3 bg-[#2c1b0e]/80 text-[#f2cf77] px-3 py-1 rounded-full text-xs font-bold border border-[#c5a25a]">
+                    <div className="absolute top-3 right-3 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">
                       {(art.score * 100).toFixed(1)}%
                     </div>
-                    {/* Subtle lighting gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#2c1b0e]/60 via-transparent to-transparent opacity-0 group-hover:opacity-70 rounded-t-3xl transition-all duration-700"></div>
                   </div>
 
-                  {/* Artwork Info */}
                   <div className="p-5 text-center">
                     <h4 className="text-xl font-semibold text-[#3e2b12] group-hover:text-[#c5a25a] transition-colors">
-                      {art.metadata?.title || "Unknown Title"}
+                      {art.metadata?.title || "Unknown"}
                     </h4>
                     {art.metadata?.artist && (
-                      <p className="text-sm text-[#6b5b3e] mt-2 italic">
-                        by {art.metadata.artist}
+                      <p className="text-sm text-[#6b5b3e] mt-2">
+                        {art.metadata.artist}
                       </p>
                     )}
-                    {art.metadata?.year && (
-                      <p className="text-xs text-[#6b5b3e] mt-1">
-                        {art.metadata.year}
-                      </p>
-                    )}
-
-                    <Button className="mt-4 bg-[#c5a25a] hover:bg-[#d4b060] text-black font-semibold shadow-md hover:shadow-lg transition-all">
-                      View Exhibit <ArrowRight className="ml-2 h-4 w-4" />
+                    <Button className="mt-4 bg-[#c5a25a] hover:bg-[#d4b060] text-black font-semibold shadow-md">
+                      View <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
 
-                  {/* Golden frame border effect */}
                   <div className="absolute inset-0 rounded-3xl ring-1 ring-[#d7c8a2]/40 group-hover:ring-[#e2b76b] transition-all duration-500 pointer-events-none"></div>
                 </Card>
               ))}
@@ -327,33 +263,22 @@ const Scanner = () => {
         {!isScanning && !image && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
             <div className="space-y-6">
-              <div className="h-24 w-24 mx-auto rounded-full bg-[#c5a25a]/20 flex items-center justify-center backdrop-blur-sm border-2 border-[#c5a25a]">
-                <Camera className="h-12 w-12 text-[#c5a25a]" />
+              <div className="h-24 w-24 mx-auto rounded-full bg-blue-500/20 flex items-center justify-center">
+                <Camera className="h-12 w-12 text-blue-500" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white">Scan Artwork</h1>
-              <p className="text-white/90 max-w-md text-lg">
+              <h1 className="text-2xl font-bold text-white">Scan Artwork</h1>
+              <p className="text-white/80 max-w-md">
                 Point your camera at any artwork or upload an image to discover similar pieces
               </p>
 
-              <div className="flex flex-col gap-3 pt-6">
-                <Button 
-                  onClick={startCamera} 
-                  disabled={isLoading} 
-                  size="lg" 
-                  className="bg-[#c5a25a] hover:bg-[#d4b060] text-black font-semibold shadow-lg text-lg py-6"
-                >
+              <div className="flex flex-col gap-3 pt-4">
+                <Button onClick={startCamera} disabled={isLoading} size="lg" className="bg-blue-500 hover:bg-blue-600">
                   <Camera className="mr-2 h-5 w-5" />
                   Open Camera
                 </Button>
 
                 <label htmlFor="file-upload">
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    className="w-full border-[#c5a25a] text-[#c5a25a] hover:bg-[#c5a25a]/10 text-lg py-6" 
-                    asChild 
-                    disabled={isLoading}
-                  >
+                  <Button variant="outline" size="lg" className="w-full" asChild disabled={isLoading}>
                     <span>
                       <Upload className="mr-2 h-5 w-5" />
                       Upload Image
@@ -377,23 +302,19 @@ const Scanner = () => {
           <div className="relative h-full">
             <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="border-4 border-[#c5a25a] w-72 h-72 rounded-2xl animate-pulse shadow-2xl shadow-[#c5a25a]/50" />
+              <div className="border-4 border-blue-500 w-64 h-64 rounded-lg animate-pulse" />
             </div>
             <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 px-4">
               <Button
                 onClick={stopCamera}
                 variant="outline"
                 size="lg"
-                className="bg-black/60 backdrop-blur-md text-white border-white/40 hover:bg-black/80 hover:border-white/60 font-semibold"
+                className="bg-black/50 backdrop-blur-sm text-white border-white/30"
               >
                 <X className="mr-2 h-5 w-5" />
                 Cancel
               </Button>
-              <Button 
-                onClick={captureImage} 
-                size="lg" 
-                className="bg-[#c5a25a] hover:bg-[#d4b060] text-black font-semibold shadow-xl shadow-[#c5a25a]/50"
-              >
+              <Button onClick={captureImage} size="lg" className="bg-blue-500 hover:bg-blue-600">
                 <Camera className="mr-2 h-5 w-5" />
                 Capture
               </Button>
@@ -403,10 +324,10 @@ const Scanner = () => {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-            <div className="text-center space-y-6">
-              <div className="h-20 w-20 mx-auto rounded-full border-4 border-[#c5a25a] border-t-transparent animate-spin shadow-xl shadow-[#c5a25a]/50" />
-              <p className="text-white text-xl font-semibold">
+          <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <div className="h-16 w-16 mx-auto rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
+              <p className="text-white text-lg font-semibold">
                 {image ? "Searching for matches..." : "Processing..."}
               </p>
             </div>
@@ -418,4 +339,4 @@ const Scanner = () => {
   );
 };
 
-export default Scanner;
+export default ScannerWithJourney;

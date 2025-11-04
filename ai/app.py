@@ -6,20 +6,21 @@ from typing import List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware  # ✅ ADD THIS
 from dotenv import load_dotenv
 from PIL import Image
 
-from pinecone import Pinecone, ServerlessSpec  # ✅ NEW IMPORT
+from pinecone import Pinecone, ServerlessSpec
 
 from embedding_service import get_embedding_service
-from pipeline import get_pipeline  # your ImagePipeline
+from pipeline import get_pipeline
 
 load_dotenv()
 
 # --- Config ---
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX = os.getenv("PINECONE_INDEX_NAME", "museum-images")
-PINECONE_REGION = os.getenv("PINECONE_REGION", "us-east-1")   # ✅ NEW
+PINECONE_REGION = os.getenv("PINECONE_REGION", "us-east-1")
 TOP_K = int(os.getenv("TOP_K", "5"))
 IMAGES_DIR = "images"
 MUSEUM_DIR = os.path.join(IMAGES_DIR, "museum")
@@ -30,6 +31,16 @@ os.makedirs(QUERIES_DIR, exist_ok=True)
 
 # --- FastAPI App ---
 app = FastAPI(title="Visual RAG Prototype - Pinecone + Local Images")
+
+# ✅ ADD CORS MIDDLEWARE - MUST BE BEFORE OTHER MIDDLEWARE
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with ["http://localhost:8080"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
 
 # --- Load Models ---
@@ -54,7 +65,7 @@ if PINECONE_INDEX not in existing_indexes:
         spec=ServerlessSpec(cloud="aws", region=PINECONE_REGION)
     )
 
-index = pc.Index(PINECONE_INDEX)  # ✅ NEW WAY OF GETTING INDEX
+index = pc.Index(PINECONE_INDEX)
 
 
 # ---------- Helpers ----------
@@ -105,7 +116,7 @@ async def index_image(
             "image_url": saved_url
         }
 
-        index.upsert(vectors=[{"id": item_id, "values": vector, "metadata": metadata}])  # ✅ v3 Format
+        index.upsert(vectors=[{"id": item_id, "values": vector, "metadata": metadata}])
 
         return JSONResponse({"status": "ok", "id": item_id, "metadata": metadata})
 
@@ -146,6 +157,39 @@ async def search_image(file: UploadFile = File(...), top_k: int = Form(TOP_K)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Search error: {e}")
+    
+@app.get("/artworks")
+async def get_artworks():
+    """Fetch all indexed artworks from Pinecone"""
+    try:
+        # Create a dummy vector to query
+        dummy_vector = [0.0] * EMBED_DIM
+        
+        resp = index.query(
+            vector=dummy_vector,
+            top_k=5,
+            include_metadata=True
+        )
+        
+        artworks = []
+        for m in resp.matches:
+            md = m.metadata or {}
+            artworks.append({
+                "id": m.id,
+                "title": md.get("title", "Unknown"),
+                "artist": md.get("artist", ""),
+                "year": md.get("year", ""),
+                "category": md.get("category", ""),
+                "shortDesc": f"{md.get('artist', 'Unknown artist')} - {md.get('year', '')}".strip(' -'),
+                "image_url": md.get("image_url", ""),
+                "metadata": md
+            })
+        
+        return {"artworks": artworks}
+        
+    except Exception as e:
+        print(f"Error fetching artworks: {e}")
+        return {"artworks": []}
 
 
 @app.get("/health")
